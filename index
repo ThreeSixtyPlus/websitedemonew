@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What a website can actually do — a working demo</title>
+<meta name="description" content="Live examples of interactive website components: filterable galleries, comparison sliders, instant pricing, conditional forms and layouts that hold up on every screen.">
+
+<!--
+=====================================================================
+  All images are live from the Three Sixty Plus media library.
+  To swap any of them, edit the GALLERY / COMPARE / DEVICE values
+  in the CONFIG block at the bottom of this file.
+=====================================================================
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ============ NEUTRAL PALETTE — porcelain / ink / ultramarine ============ */
+:root{
+  --paper:#F4F5F7; --surface:#FFFFFF; --ink:#14181D; --slate:#5A6472;
+  --hair:#DEE2E7; --accent:#2B4CF2; --accent-soft:rgba(43,76,242,.08);
+  --radius:12px; --maxw:1140px;
+}
+[data-theme="dark"]{
+  --paper:#0F1216; --surface:#171B21; --ink:#EDEFF2; --slate:#98A2B0;
+  --hair:#262C34; --accent:#7C93FF; --accent-soft:rgba(124,147,255,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--paper);color:var(--ink);
+  font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;transition:background .3s ease,color .3s ease;
+}
+h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;line-height:1.05;letter-spacing:-.025em}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+select{font:inherit}
+img{display:block;width:100%;height:100%;object-fit:cover;background:var(--surface)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase}
+.eyebrow{color:var(--accent);margin-bottom:14px;display:block}
+section{padding:70px 0;border-top:1px solid var(--hair)}
+@media(min-width:900px){section{padding:96px 0}}
+
+/* section heading + the "who this is for" note that replaces a CTA */
+.sec-head{max-width:60ch;margin-bottom:34px}
+.sec-head h2{font-size:clamp(28px,4.4vw,44px)}
+.sec-head p{color:var(--slate);margin-top:14px;font-size:17px}
+.forwho{
+  margin-top:26px;padding:20px 22px;
+  background:var(--surface);border:1px solid var(--hair);
+  border-left:4px solid var(--accent);border-radius:14px;
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+}
+.forwho b{
+  width:100%;font-family:'JetBrains Mono',monospace;font-weight:500;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:2px;
+}
+.forwho span{
+  border:1.5px solid var(--hair);border-radius:100px;padding:8px 16px;
+  font-size:14px;font-weight:500;color:var(--ink);background:var(--paper);
+}
+[data-theme="dark"] .forwho span{background:var(--paper)}
+
+/* ---------------- header ---------------- */
+header{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--hair)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+.brand{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;letter-spacing:-.02em}
+.brand i{font-style:normal;color:var(--accent)}
+.nav-links{display:none;gap:24px;font-size:14.5px;color:var(--slate)}
+.nav-links a:hover{color:var(--ink)}
+@media(min-width:1000px){.nav-links{display:flex}}
+.themeswitch{
+  display:flex;gap:3px;padding:4px;flex:none;
+  background:var(--surface);border:1.5px solid var(--hair);border-radius:100px;
+}
+.themeswitch button{
+  display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:100px;
+  font-size:13px;font-weight:500;color:var(--slate);transition:background .2s,color .2s;
+}
+.themeswitch button:hover{color:var(--ink)}
+.themeswitch button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.themeswitch svg{width:14px;height:14px;flex:none}
+@media(max-width:520px){.themeswitch button span{display:none}.themeswitch button{padding:8px 11px}}
+
+/* ---------------- hero ---------------- */
+.hero{padding:56px 0 74px;border-top:0}
+.hero h1{font-size:clamp(38px,7.2vw,68px);max-width:15ch}
+.hero .lead{color:var(--slate);font-size:18px;margin:22px 0 34px;max-width:56ch}
+
+/* ---------------- responsive rig ---------------- */
+.rig{background:var(--surface);border:1px solid var(--hair);border-radius:18px;padding:18px}
+@media(min-width:900px){.rig{padding:26px}}
+.rig-bar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:18px}
+.rig-bar .mono{color:var(--slate)}
+.rig-read{color:var(--accent)!important;font-weight:500}
+.rig-presets{display:flex;gap:6px;margin-left:auto}
+.rig-presets button{border:1px solid var(--hair);border-radius:100px;padding:6px 13px;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;color:var(--slate)}
+.rig-presets button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:3px;background:var(--hair);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:ew-resize;border:3px solid var(--surface);box-shadow:0 2px 10px rgba(0,0,0,.18)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:ew-resize;border:3px solid var(--surface)}
+.rig-stage{margin-top:20px;display:flex;justify-content:center;background:var(--paper);border-radius:12px;padding:16px 12px;overflow:hidden}
+.viewport{width:100%;max-width:100%;background:var(--surface);border:1px solid var(--hair);border-radius:10px;overflow:hidden;container-type:inline-size;transition:width .18s ease}
+
+.mini-nav{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--hair)}
+.mini-logo{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px}
+.mini-menu{display:none;gap:14px;color:var(--slate);font-size:11px}
+.mini-burger{display:flex;flex-direction:column;gap:3px}
+.mini-burger i{width:16px;height:1.5px;background:var(--ink);display:block}
+.mini-hero{display:grid;gap:14px;padding:16px 14px}
+.mini-hero h4{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;line-height:1.1;font-weight:800}
+.mini-hero p{color:var(--slate);font-size:11.5px;margin-top:6px}
+.mini-pill{display:inline-block;margin-top:10px;background:var(--accent);color:#fff;border-radius:100px;padding:7px 14px;font-size:11px}
+.mini-img{aspect-ratio:1/1;border-radius:8px;overflow:hidden}
+.mini-cards{display:grid;gap:10px;padding:0 14px 18px;grid-template-columns:1fr}
+.mini-card{border:1px solid var(--hair);border-radius:8px;padding:11px}
+.mini-card b{display:block;font-size:11.5px;font-weight:500}
+.mini-card span{color:var(--slate);font-size:10.5px}
+@container (min-width:560px){
+  .mini-menu{display:flex}
+  .mini-burger{display:none}
+  .mini-hero{grid-template-columns:1.1fr .9fr;align-items:center;padding:26px 22px}
+  .mini-hero h4{font-size:26px}
+  .mini-img{aspect-ratio:1/1}
+  .mini-cards{grid-template-columns:repeat(3,1fr);padding:0 22px 26px}
+}
+@container (min-width:900px){
+  .mini-hero{padding:40px 30px;gap:30px}
+  .mini-hero h4{font-size:34px}
+  .mini-cards{padding:0 30px 34px;gap:14px}
+}
+
+.creds{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.chip{
+  border:1.5px solid var(--hair);background:var(--surface);border-radius:100px;
+  padding:10px 18px;font-size:14px;font-weight:500;color:var(--ink);
+}
+.chip b{color:var(--accent);font-weight:500}
+
+/* ---------------- gallery ---------------- */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.filters button{border:1px solid var(--hair);border-radius:100px;padding:9px 17px;font-size:14px;color:var(--slate);transition:background .2s,color .2s,border-color .2s}
+.filters button:hover{border-color:var(--accent);color:var(--accent)}
+.filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.gal{display:grid;gap:14px;grid-template-columns:repeat(2,1fr)}
+@media(min-width:820px){.gal{grid-template-columns:repeat(3,1fr);gap:18px}}
+.tile{border:1px solid var(--hair);border-radius:var(--radius);overflow:hidden;background:var(--surface);cursor:zoom-in;animation:pop .32s cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.tile{animation:none}}
+.tile .frame{aspect-ratio:1/1;overflow:hidden}
+.tile img{transition:transform .4s ease}
+.tile:hover img{transform:scale(1.04)}
+.tile figcaption{padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.tile figcaption b{font-weight:500;font-size:14px}
+.tile figcaption span{color:var(--slate);font-size:11px}
+.gal-note{margin-top:18px;color:var(--slate)}
+
+.lb{position:fixed;inset:0;z-index:100;background:rgba(8,10,13,.92);display:none;align-items:center;justify-content:center;padding:24px}
+.lb[open]{display:flex}
+.lb figure{max-width:760px;width:100%}
+.lb .frame{aspect-ratio:1/1;border-radius:12px;overflow:hidden}
+.lb figcaption{color:#fff;margin-top:14px;display:flex;justify-content:space-between;font-size:14px}
+.lb-close{position:absolute;top:18px;right:22px;color:#fff;font-size:28px;line-height:1}
+
+/* ---------------- before / after ---------------- */
+.ba{position:relative;border:1px solid var(--hair);border-radius:var(--radius);overflow:hidden;aspect-ratio:1/1;max-width:620px;margin:0 auto;background:var(--surface);touch-action:none}
+@media(min-width:820px){.ba{aspect-ratio:4/3;max-width:820px}}
+.ba .layer{position:absolute;inset:0}
+.ba .layer.after{clip-path:inset(0 0 0 var(--split,50%))}
+.ba-tag{position:absolute;bottom:14px;background:rgba(8,10,13,.72);color:#fff;padding:6px 12px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.1em}
+.ba-tag.l{left:14px}.ba-tag.r{right:14px}
+.ba-handle{position:absolute;top:0;bottom:0;width:2px;background:#fff;left:var(--split,50%);pointer-events:none}
+.ba-handle::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.ba input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+
+/* ---------------- panels, calculator, form ---------------- */
+.two{display:grid;gap:20px}
+@media(min-width:900px){.two{grid-template-columns:1.15fr .85fr;gap:26px;align-items:start}}
+.panel{background:var(--surface);border:1px solid var(--hair);border-radius:16px;padding:22px}
+@media(min-width:900px){.panel{padding:28px}}
+.field-label{display:block;color:var(--slate);margin-bottom:12px}
+.seg{display:flex;border:1px solid var(--hair);border-radius:100px;padding:4px;width:fit-content;margin-bottom:26px}
+.seg button{padding:8px 18px;border-radius:100px;font-size:14px;color:var(--slate)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.plans{display:grid;gap:10px;margin-bottom:26px}
+.plan{display:flex;align-items:center;gap:14px;border:1px solid var(--hair);border-radius:12px;padding:15px 16px;cursor:pointer;transition:border-color .2s,background .2s}
+.plan:hover{border-color:var(--accent)}
+.plan[data-on="1"]{border-color:var(--accent);background:var(--accent-soft)}
+.plan .dot{width:17px;height:17px;border-radius:50%;border:2px solid var(--hair);flex:none;position:relative}
+.plan[data-on="1"] .dot{border-color:var(--accent)}
+.plan[data-on="1"] .dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
+.plan .txt{flex:1}
+.plan .txt b{display:block;font-weight:500;font-size:15px}
+.plan .txt span{color:var(--slate);font-size:13px}
+.plan .amt{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500}
+.addons{display:grid;gap:8px}
+.addon{display:flex;align-items:center;gap:13px;border:1px solid var(--hair);border-radius:10px;padding:13px 15px;cursor:pointer}
+.addon[data-on="1"]{border-color:var(--accent);background:var(--accent-soft)}
+.addon .box{width:17px;height:17px;border-radius:5px;border:2px solid var(--hair);flex:none;position:relative}
+.addon[data-on="1"] .box{border-color:var(--accent);background:var(--accent)}
+.addon[data-on="1"] .box::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;border:2px solid #fff;border-top:0;border-left:0;transform:rotate(42deg)}
+.addon .txt{flex:1;font-size:14.5px}
+.addon .amt{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--slate)}
+.summary{position:sticky;top:88px}
+.summary .amount{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(36px,6vw,50px);letter-spacing:-.03em;margin:6px 0 4px}
+.summary .sub{color:var(--slate);font-size:14px}
+.summary ul{list-style:none;margin:22px 0 0;border-top:1px solid var(--hair);padding-top:18px;display:grid;gap:9px}
+.summary li{display:flex;justify-content:space-between;gap:14px;font-size:14px;color:var(--slate)}
+.summary li b{color:var(--ink);font-weight:500;font-family:'JetBrains Mono',monospace;font-size:13px}
+.summary .foot-note{display:block;color:var(--slate);font-size:12.5px;margin-top:18px;border-top:1px solid var(--hair);padding-top:14px}
+
+/* dynamic form */
+.dfield{margin-bottom:18px}
+.dfield label{display:block;font-size:13.5px;color:var(--slate);margin-bottom:7px}
+.dfield select,.dfield input[type=text],.dfield input[type=tel]{
+  width:100%;padding:13px 15px;border-radius:10px;background:var(--paper);
+  border:1px solid var(--hair);color:var(--ink);font-size:15px;
+}
+.dfield select:focus,.dfield input:focus{outline:none;border-color:var(--accent)}
+.dfield .hint{font-size:12.5px;color:var(--slate);margin-top:6px;min-height:18px}
+.dfield .hint.ok{color:#1a9e5f}
+.dfield .hint.no{color:#d94b4b}
+.reveal{animation:slidein .28s cubic-bezier(.2,.7,.3,1)}
+@keyframes slidein{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.rangewrap{display:flex;align-items:center;gap:14px}
+.rangewrap output{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--accent);min-width:52px;text-align:right}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pills button{border:1px solid var(--hair);border-radius:100px;padding:9px 15px;font-size:14px;color:var(--slate)}
+.pills button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.demo-submit{width:100%;padding:14px;border-radius:100px;background:var(--ink);color:var(--paper);font-size:15px;font-weight:500;margin-top:6px}
+.demo-note{display:block;text-align:center;color:var(--slate);font-size:12.5px;margin-top:10px}
+
+/* ---------------- lab ---------------- */
+.lab{display:grid;gap:16px}
+@media(min-width:820px){.lab{grid-template-columns:repeat(3,1fr)}}
+.lab h3{font-size:16px;margin-bottom:6px}
+.lab .cap{color:var(--slate);font-size:13.5px;margin-bottom:18px}
+.counter{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:42px;letter-spacing:-.03em;color:var(--accent)}
+.acc{border-top:1px solid var(--hair)}
+.acc details{border-bottom:1px solid var(--hair)}
+.acc summary{list-style:none;padding:13px 0;font-size:14.5px;display:flex;justify-content:space-between;gap:10px;cursor:pointer}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{content:"+";color:var(--accent);font-family:'JetBrains Mono',monospace}
+.acc details[open] summary::after{content:"−"}
+.acc p{color:var(--slate);font-size:13.5px;padding-bottom:14px}
+.lazyrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lazyrow div{aspect-ratio:1/1;border-radius:8px;overflow:hidden}
+
+/* ---------------- footer ---------------- */
+footer{border-top:1px solid var(--hair);padding:54px 0 36px;font-size:14.5px}
+.foot{display:grid;gap:26px}
+@media(min-width:820px){.foot{grid-template-columns:1.5fr 1fr 1fr}}
+.foot h4{margin-bottom:14px;color:var(--slate)}
+.foot a{color:var(--slate);display:block;margin-bottom:9px}
+.foot a:hover{color:var(--accent)}
+.credit{border-top:1px solid var(--hair);margin-top:36px;padding-top:22px;color:var(--slate);font-size:13px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">Three Sixty <i>Plus</i></div>
+    <nav class="nav-links">
+      <a href="#responsive">Every screen</a>
+      <a href="#gallery">Dynamic gallery</a>
+      <a href="#compare">Before / after</a>
+      <a href="#pricing">Instant pricing</a>
+      <a href="#form">Smart form</a>
+      <a href="#lab">Details</a>
+    </nav>
+    <div class="themeswitch" id="themeSwitch" role="group" aria-label="Colour theme">
+      <button data-mode="light" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <span>Light</span>
+      </button>
+      <button data-mode="dark" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <span>Dark</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="wrap">
+    <span class="mono eyebrow">A working demo — not a brochure</span>
+    <h1>Most websites just sit there.</h1>
+    <p class="lead">This page is a demonstration. Every component below is live — drag it, filter it, type into it. Each one exists because it removes a specific reason a visitor leaves without contacting you. The photography throughout is our own studio work.</p>
+
+    <div class="forwho" style="margin-bottom:34px">
+      <b>Your brand, your palette</b>
+      <p style="width:100%;color:var(--slate);font-size:15px;margin:-2px 0 4px">A site is built in whatever colours your brand calls for — light, dark, or something in between. Try it on this page:</p>
+      <div class="themeswitch" role="group" aria-label="Colour theme">
+        <button data-mode="light" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <span>Light</span>
+        </button>
+        <button data-mode="dark" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <span>Dark</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="rig" id="responsive">
+      <div class="rig-bar">
+        <span class="mono">Screen width <b class="rig-read mono" id="wRead">1140px</b></span>
+        <span class="mono" id="dRead">Desktop layout</span>
+        <div class="rig-presets">
+          <button data-w="380" class="mono">Phone</button>
+          <button data-w="768" class="mono">Tablet</button>
+          <button data-w="1140" class="mono" aria-pressed="true">Desktop</button>
+        </div>
+      </div>
+      <input type="range" id="wRange" min="320" max="1140" value="1140" aria-label="Drag to resize the preview">
+      <div class="rig-stage">
+        <div class="viewport" id="viewport">
+          <div class="mini-nav">
+            <span class="mini-logo">Aurora Skincare</span>
+            <span class="mini-menu"><span>Shop</span><span>About</span><span>Contact</span></span>
+            <span class="mini-burger"><i></i><i></i><i></i></span>
+          </div>
+          <div class="mini-hero">
+            <div>
+              <h4>Skin that behaves itself.</h4>
+              <p>Small-batch formulas, made without the marketing nonsense.</p>
+              <span class="mini-pill">Shop the range</span>
+            </div>
+            <div class="mini-img"><img id="deviceImg" src="" alt="Product photography example"></div>
+          </div>
+          <div class="mini-cards">
+            <div class="mini-card"><b>Cleansers</b><span>Daily wash &amp; balm</span></div>
+            <div class="mini-card"><b>Serums</b><span>Targeted treatment</span></div>
+            <div class="mini-card"><b>Sets</b><span>Full routines</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="forwho">
+      <b>What this section shows:</b>
+      <span>The same page rebuilding itself for phone, tablet and desktop</span>
+      <span>No pinching, no sideways scrolling, no shrunken text</span>
+    </div>
+
+    <div class="creds">
+      <span class="chip"><b>Certified Wix Partner</b> — Icon level</span>
+      <span class="chip"><b>Certified Wix Expert</b> — designer &amp; developer</span>
+      <span class="chip"><b>25+</b> Premium sites managed</span>
+      <span class="chip">Photography, film &amp; web <b>in one studio</b></span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DYNAMIC GALLERY ================= -->
+<section id="gallery">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="mono eyebrow">Dynamic gallery</span>
+      <h2>A portfolio that updates itself.</h2>
+      <p>None of these images are hard-coded into the page. They come from a content collection — add a project there and it appears here automatically, in the right category, in the right order. Click any image to open it full size.</p>
+      <div class="forwho">
+        <b>Built for:</b>
+        <span>Photographers &amp; studios</span>
+        <span>Interior &amp; architecture firms</span>
+        <span>Manufacturers with a product range</span>
+        <span>Anyone updating their own site</span>
+      </div>
+    </div>
+    <div class="filters" id="filters"></div>
+    <div class="gal" id="gal"></div>
+    <p class="gal-note mono" id="galCount"></p>
+  </div>
+</section>
+
+<!-- ================= BEFORE / AFTER ================= -->
+<section id="compare">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="mono eyebrow">Comparison slider</span>
+      <h2>Show the difference. Don't claim it.</h2>
+      <p>Drag the handle across the image. This is a real pair from our studio — the same product shot on a phone, then shot properly. Two seconds of dragging does more convincing than a page of copy.</p>
+      <div class="forwho">
+        <b>Built for:</b>
+        <span>Anyone selling a visible improvement</span>
+        <span>Renovation &amp; interiors</span>
+        <span>Restoration &amp; detailing</span>
+        <span>Salons &amp; clinics</span>
+      </div>
+    </div>
+    <div class="ba" id="ba">
+      <div class="layer"><img id="baBefore" src="" alt="Shot on a phone"></div>
+      <div class="layer after"><img id="baAfter" src="" alt="Shot in our studio"></div>
+      <span class="ba-tag l" id="baL"></span>
+      <span class="ba-tag r" id="baR"></span>
+      <div class="ba-handle"></div>
+      <input type="range" min="0" max="100" value="50" aria-label="Compare before and after">
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRICING ================= -->
+<section id="pricing">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="mono eyebrow">Instant pricing</span>
+      <h2>A number, without an email exchange.</h2>
+      <p>Switch currency, choose a package, tick what you need — the estimate updates as you go. Visitors who can see a price enquire far more often than visitors who have to ask for one.</p>
+      <div class="forwho">
+        <b>Built for:</b>
+        <span>Service businesses with tiered packages</span>
+        <span>Manufacturers quoting by quantity</span>
+        <span>Anyone losing enquiries to "request a quote"</span>
+      </div>
+    </div>
+
+    <div class="two">
+      <div class="panel">
+        <span class="field-label">Currency</span>
+        <div class="seg" id="curSeg">
+          <button data-cur="in" aria-pressed="true">₹ India</button>
+          <button data-cur="com">$ International</button>
+        </div>
+        <span class="field-label">Package</span>
+        <div class="plans" id="plans"></div>
+        <span class="field-label">Add to it</span>
+        <div class="addons" id="addons"></div>
+      </div>
+
+      <div class="panel summary">
+        <span class="mono" style="color:var(--slate)">Estimate</span>
+        <div class="amount" id="totalAmt">₹11,999</div>
+        <p class="sub" id="totalSub">Basic Website</p>
+        <ul id="breakdown"></ul>
+        <span class="foot-note">Every package includes a free domain for one year, a responsive build and SSL.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DYNAMIC FORM ================= -->
+<section id="form">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="mono eyebrow">Smart form</span>
+      <h2>A form that asks the right questions.</h2>
+      <p>Change the service and watch the fields change with it. A photography enquiry asks about products and background; a website enquiry asks about pages and payments. People abandon long generic forms — this one only ever shows what's relevant, and checks the phone number as it's typed.</p>
+      <div class="forwho">
+        <b>Built for:</b>
+        <span>Studios quoting several service types</span>
+        <span>Manufacturers taking spec-based enquiries</span>
+        <span>Anyone chasing clients for missing details</span>
+      </div>
+    </div>
+
+    <div class="two">
+      <div class="panel">
+        <div class="dfield">
+          <label for="svc">What do you need?</label>
+          <select id="svc">
+            <option value="photo">Product photography</option>
+            <option value="web">Website design</option>
+            <option value="video">Video production</option>
+            <option value="brand">Branding &amp; identity</option>
+          </select>
+        </div>
+        <div id="dynFields"></div>
+        <div class="dfield">
+          <label for="dPhone">Phone number</label>
+          <input type="tel" id="dPhone" inputmode="numeric" placeholder="10-digit mobile number">
+          <div class="hint" id="dHint">We check this as you type, so a typo never costs you a callback.</div>
+        </div>
+        <button class="demo-submit" id="demoSend">Send enquiry</button>
+        <span class="demo-note" id="demoNote">This is a demo — nothing is submitted.</span>
+      </div>
+
+      <div class="panel summary">
+        <span class="mono" style="color:var(--slate)">What we'd receive</span>
+        <ul id="formSummary" style="border-top:0;padding-top:14px"></ul>
+        <span class="foot-note">On a live site this lands in your inbox and your dashboard, already sorted by service type.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DETAILS ================= -->
+<section id="lab">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="mono eyebrow">The small stuff</span>
+      <h2>Details most sites skip.</h2>
+      <p>None of these are impressive on their own. Together they're the difference between a visitor who waits and a visitor who closes the tab.</p>
+    </div>
+    <div class="lab">
+      <div class="panel">
+        <h3>Numbers that arrive</h3>
+        <p class="cap">Counters animate the moment they scroll into view.</p>
+        <div class="counter" data-to="25" id="c1">0<span id="c1suffix" style="opacity:0">+</span></div>
+        <span class="mono" style="color:var(--slate)">Premium sites managed</span>
+      </div>
+      <div class="panel">
+        <h3>Answers, not tickets</h3>
+        <p class="cap">An FAQ that cuts repetitive questions out of your inbox.</p>
+        <div class="acc">
+          <details><summary>Do I own the site?</summary><p>Yes. The site and the domain are registered in your name.</p></details>
+          <details><summary>Can I edit it myself?</summary><p>Yes — content is managed from a simple dashboard, with no code involved.</p></details>
+          <details><summary>What happens after launch?</summary><p>You keep full access. Support and updates are arranged separately if you want them.</p></details>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Images that load</h3>
+        <p class="cap">Sized and compressed properly, so a phone on mobile data doesn't stall.</p>
+        <div class="lazyrow" id="lazyRow"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <div class="brand" style="margin-bottom:12px">Three Sixty <i>Plus</i></div>
+        <p style="color:var(--slate);max-width:40ch">Product photography, video, branding and websites. Amritsar, Punjab — working with clients across India, the UK, US, Canada and Australia.</p>
+      </div>
+      <div>
+        <h4 class="mono">Studio</h4>
+        <a href="https://www.threesixtyplus.in" target="_blank" rel="noopener">threesixtyplus.in — India</a>
+        <a href="https://www.threesixtyplus.com" target="_blank" rel="noopener">threesixtyplus.com — Global</a>
+        <a href="mailto:info@threesixtyplus.com">info@threesixtyplus.com</a>
+        <a href="tel:+916283587787">+91 62835 87787</a>
+      </div>
+      <div>
+        <h4 class="mono">Elsewhere</h4>
+        <a href="https://www.instagram.com/threesixtyplus" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://www.facebook.com/threesixteeplus" target="_blank" rel="noopener">Facebook</a>
+        <a href="https://www.linkedin.com/in/manjotsinghsachdeva/" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://www.twitter.com/naturepassion" target="_blank" rel="noopener">Twitter</a>
+      </div>
+    </div>
+    <div class="credit">
+      <span>© 2026 Three Sixty Plus</span>
+      <span>Demonstration page. All photography shot in our studio.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true">
+  <button class="lb-close" id="lbClose" aria-label="Close">×</button>
+  <figure>
+    <div class="frame"><img id="lbImg" src="" alt=""></div>
+    <figcaption><b id="lbTitle"></b><span id="lbCat"></span></figcaption>
+  </figure>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIG
+   ===================================================================== */
+const CDN = 'https://static.wixstatic.com/media/';
+function img(id, w, h){
+  const ext = id.split('.').pop();
+  return CDN + id + '/v1/fill/w_' + w + ',h_' + h + ',al_c,q_80/file.' + ext;
+}
+
+const GALLERY = [
+  {id:'ccfa30_d20642d02bc24692b18139fa59d756bf~mv2.webp', title:'Ashwagandha supplement', cat:'Health & wellness'},
+  {id:'ccfa30_baed8e5425bc423597df3fda311cc89d~mv2.jpg',  title:'Tongue cleaner, feature set', cat:'Health & wellness'},
+  {id:'ccfa30_6fdfd919037b419183b2e88c4f8d6a0a~mv2.webp', title:'Lab glassware with reagent', cat:'Glassware'},
+  {id:'ccfa30_ca3ec5b7cefa4bb9bfc4db22fb2e8ab8~mv2.webp', title:'Borosilicate flask', cat:'Glassware'},
+  {id:'ccfa30_bcf08e9178f04ad3b3c89dce6dbc2d5e~mv2.jpg',  title:'Makeup brush set', cat:'Beauty'},
+  {id:'ccfa30_c99946dafc064655b2903cfb7d614c6a~mv2.jpg',  title:'Lemongrass body scrub', cat:'Beauty'},
+  {id:'ccfa30_d2e4e031f3ac44799c050aaf3936077c~mv2.jpeg', title:'RFID wallet, feature display', cat:'Consumer goods'},
+  {id:'ccfa30_453e9416e84649fc8b68a0e5bceafd5c~mv2.jpg',  title:'Magnetic chess set', cat:'Consumer goods'},
+  {id:'ccfa30_84f8f719463d4c8084b2df6cdae97f6f~mv2.webp', title:'Knitwear on model', cat:'Apparel'},
+  {id:'ccfa30_81089d8229e247269a1f3c1fadb2f19f~mv2.jpeg', title:'Winter outerwear', cat:'Apparel'},
+  {id:'ccfa30_b3bcd000990241fb829fdaa0454244df~mv2.jpg',  title:'Watch on marble', cat:'Jewellery & watches'},
+  {id:'ccfa30_1799f11efb6c4d9ab65d334aec393b55~mv2.jpg',  title:'Pearl necklace', cat:'Jewellery & watches'}
+];
+
+// real before/after pair from the studio's own comparison collection
+const COMPARE = {
+  before: 'ccfa30_aeac7594bbc94590a213a282839fe689~mv2.png',
+  after:  'ccfa30_4ec4eeec0d5648de9be4d009ecdbba0a~mv2.webp',
+  beforeLabel: 'Phone camera',
+  afterLabel:  'Three Sixty Plus studio'
+};
+
+const DEVICE = 'ccfa30_3384ba860369418989b5af6f9d25d2dd~mv2.jpeg';
+
+const LAZY = [
+  'ccfa30_1d5a807e905d4ed28440e69c4b57dbd9~mv2.webp',
+  'ccfa30_0c2be46224ce4577af11ea292378cb9f~mv2.jpg',
+  'ccfa30_30d0903a84e94a99af5f2def3dc4fea0~mv2.jpg'
+];
+
+const PLANS = {
+  in:  {symbol:'₹', locale:'en-IN', items:[
+        {id:'basic', name:'Basic Website',     note:'Up to 5 pages · one-time ₹999 setup', price:11999, setup:999},
+        {id:'best',  name:'Best Value',        note:'Most chosen — larger, fully custom',  price:24999, setup:0},
+        {id:'ecom',  name:'Ecommerce Website', note:'Online store with payments',          price:44999, setup:0}]},
+  com: {symbol:'$', locale:'en-US', items:[
+        {id:'basic', name:'Starter',           note:'Up to 5 pages',                       price:199, setup:0},
+        {id:'best',  name:'Standard',          note:'Most chosen — larger, fully custom',  price:299, setup:0},
+        {id:'ecom',  name:'Starter Store',     note:'Online store with payments',          price:399, setup:0}]}
+};
+
+// set a real number to price an add-on; leave 0 and it shows "on request"
+const ADDONS = [
+  {id:'a1', name:'Extra pages',            in:0, com:0},
+  {id:'a2', name:'Product photography',    in:0, com:0},
+  {id:'a3', name:'Logo & brand identity',  in:0, com:0},
+  {id:'a4', name:'Monthly care & updates', in:0, com:0}
+];
+
+// conditional fields for the smart form
+const FORM_FIELDS = {
+  photo: [
+    {k:'count', type:'range', label:'How many products?', min:1, max:100, val:12, suffix:''},
+    {k:'style', type:'pills', label:'Background', options:['White / marketplace','Lifestyle','Dark &amp; moody'], val:0}
+  ],
+  web: [
+    {k:'pages', type:'range', label:'Roughly how many pages?', min:1, max:30, val:6, suffix:''},
+    {k:'sell',  type:'pills', label:'Selling online?', options:['No','Yes, a few products','Yes, full catalogue'], val:0}
+  ],
+  video: [
+    {k:'length', type:'range', label:'Video length (seconds)', min:10, max:180, val:30, suffix:'s'},
+    {k:'kind',   type:'pills', label:'Type', options:['Product demo','Brand film','Social cut-downs'], val:0}
+  ],
+  brand: [
+    {k:'scope', type:'pills', label:'What do you need?', options:['Logo only','Logo + guidelines','Full identity'], val:1},
+    {k:'stage', type:'pills', label:'Stage', options:['Brand new','Refresh'], val:0}
+  ]
+};
+const SERVICE_NAMES = {photo:'Product photography', web:'Website design', video:'Video production', brand:'Branding & identity'};
+
+/* ===================== behaviour ===================== */
+
+// theme — visitor chooses; both switches stay in sync
+const themeSwitches = document.querySelectorAll('.themeswitch');
+function setTheme(mode){
+  document.documentElement.dataset.theme = mode;
+  themeSwitches.forEach(sw => sw.querySelectorAll('button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.mode === mode))));
+}
+themeSwitches.forEach(sw => sw.addEventListener('click', e => {
+  const b = e.target.closest('button'); if(b) setTheme(b.dataset.mode);
+}));
+setTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+// responsive rig
+const wRange = document.getElementById('wRange'), viewport = document.getElementById('viewport'),
+      wRead = document.getElementById('wRead'), dRead = document.getElementById('dRead'),
+      presets = document.querySelectorAll('.rig-presets button');
+function setWidth(px){
+  const stage = viewport.parentElement.clientWidth - 24;
+  viewport.style.width = Math.min(px, stage) + 'px';
+  wRead.textContent = px + 'px';
+  dRead.textContent = px < 560 ? 'Phone layout' : px < 900 ? 'Tablet layout' : 'Desktop layout';
+  presets.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.w === px)));
+}
+wRange.addEventListener('input', e => setWidth(+e.target.value));
+presets.forEach(b => b.addEventListener('click', () => { wRange.value = b.dataset.w; setWidth(+b.dataset.w); }));
+window.addEventListener('resize', () => setWidth(+wRange.value));
+setWidth(+wRange.value);
+document.getElementById('deviceImg').src = img(DEVICE, 700, 700);
+
+// gallery
+const galEl = document.getElementById('gal'), filtersEl = document.getElementById('filters'),
+      countEl = document.getElementById('galCount');
+const cats = ['All', ...new Set(GALLERY.map(g => g.cat))];
+let active = 'All';
+filtersEl.innerHTML = cats.map(c => `<button data-cat="${c}" aria-pressed="${c === 'All'}">${c}</button>`).join('');
+function renderGallery(){
+  const list = GALLERY.filter(g => active === 'All' || g.cat === active);
+  galEl.innerHTML = list.map((g, i) => `
+    <figure class="tile" style="animation-delay:${i * 40}ms" data-i="${GALLERY.indexOf(g)}">
+      <div class="frame"><img src="${img(g.id, 640, 640)}" alt="${g.title}" loading="lazy"></div>
+      <figcaption><b>${g.title}</b><span class="mono">${g.cat}</span></figcaption>
+    </figure>`).join('');
+  countEl.textContent = `Showing ${list.length} of ${GALLERY.length} projects`;
+}
+filtersEl.addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  active = b.dataset.cat;
+  filtersEl.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  renderGallery();
+});
+renderGallery();
+
+// lightbox
+const lb = document.getElementById('lb');
+galEl.addEventListener('click', e => {
+  const t = e.target.closest('.tile'); if(!t) return;
+  const g = GALLERY[+t.dataset.i];
+  document.getElementById('lbImg').src = img(g.id, 1000, 1000);
+  document.getElementById('lbTitle').textContent = g.title;
+  document.getElementById('lbCat').textContent = g.cat;
+  lb.setAttribute('open','');
+});
+function closeLb(){ lb.removeAttribute('open'); }
+document.getElementById('lbClose').addEventListener('click', closeLb);
+lb.addEventListener('click', e => { if(e.target === lb) closeLb(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeLb(); });
+
+// before / after
+document.getElementById('baBefore').src = img(COMPARE.before, 900, 900);
+document.getElementById('baAfter').src  = img(COMPARE.after, 900, 900);
+document.getElementById('baL').textContent = COMPARE.beforeLabel;
+document.getElementById('baR').textContent = COMPARE.afterLabel;
+const ba = document.getElementById('ba');
+ba.querySelector('input').addEventListener('input', e => ba.style.setProperty('--split', e.target.value + '%'));
+
+// calculator
+let cur = 'in', plan = 'basic';
+const chosen = new Set();
+const plansEl = document.getElementById('plans'), addonsEl = document.getElementById('addons');
+const money = n => new Intl.NumberFormat(PLANS[cur].locale, {maximumFractionDigits:0}).format(n);
+function renderCalc(){
+  const P = PLANS[cur];
+  plansEl.innerHTML = P.items.map(p => `
+    <div class="plan" data-id="${p.id}" data-on="${p.id === plan ? 1 : 0}">
+      <span class="dot"></span>
+      <span class="txt"><b>${p.name}</b><span>${p.note}</span></span>
+      <span class="amt">${P.symbol}${money(p.price)}</span>
+    </div>`).join('');
+  addonsEl.innerHTML = ADDONS.map(a => `
+    <div class="addon" data-id="${a.id}" data-on="${chosen.has(a.id) ? 1 : 0}">
+      <span class="box"></span><span class="txt">${a.name}</span>
+      <span class="amt">${a[cur] ? '+ ' + P.symbol + money(a[cur]) : 'on request'}</span>
+    </div>`).join('');
+  const p = P.items.find(x => x.id === plan);
+  let total = p.price + (p.setup || 0), onRequest = false;
+  const lines = [{k:p.name, v:P.symbol + money(p.price)}];
+  if(p.setup) lines.push({k:'One-time setup', v:P.symbol + money(p.setup)});
+  ADDONS.forEach(a => {
+    if(!chosen.has(a.id)) return;
+    if(a[cur]){ total += a[cur]; lines.push({k:a.name, v:P.symbol + money(a[cur])}); }
+    else { onRequest = true; lines.push({k:a.name, v:'on request'}); }
+  });
+  document.getElementById('totalAmt').textContent = P.symbol + money(total) + (onRequest ? '+' : '');
+  document.getElementById('totalSub').textContent = onRequest ? p.name + ' — plus items quoted on request' : p.name;
+  document.getElementById('breakdown').innerHTML = lines.map(l => `<li><span>${l.k}</span><b>${l.v}</b></li>`).join('');
+}
+document.getElementById('curSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  cur = b.dataset.cur;
+  document.querySelectorAll('#curSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  renderCalc();
+});
+plansEl.addEventListener('click', e => { const el = e.target.closest('.plan'); if(el){ plan = el.dataset.id; renderCalc(); } });
+addonsEl.addEventListener('click', e => {
+  const el = e.target.closest('.addon'); if(!el) return;
+  chosen.has(el.dataset.id) ? chosen.delete(el.dataset.id) : chosen.add(el.dataset.id);
+  renderCalc();
+});
+renderCalc();
+
+// dynamic form
+const svcEl = document.getElementById('svc'), dynEl = document.getElementById('dynFields'),
+      sumEl = document.getElementById('formSummary'), dPhone = document.getElementById('dPhone'),
+      dHint = document.getElementById('dHint');
+let svc = 'photo', state = {};
+
+function buildFields(){
+  state = {};
+  dynEl.innerHTML = FORM_FIELDS[svc].map((f, i) => {
+    state[f.k] = f.type === 'range' ? f.val : f.options[f.val];
+    if(f.type === 'range'){
+      return `<div class="dfield reveal" style="animation-delay:${i * 50}ms">
+        <label for="r-${f.k}">${f.label}</label>
+        <div class="rangewrap">
+          <input type="range" id="r-${f.k}" data-k="${f.k}" data-suffix="${f.suffix}" min="${f.min}" max="${f.max}" value="${f.val}">
+          <output id="o-${f.k}">${f.val}${f.suffix}</output>
+        </div>
+      </div>`;
+    }
+    return `<div class="dfield reveal" style="animation-delay:${i * 50}ms">
+      <label>${f.label}</label>
+      <div class="pills" data-k="${f.k}">
+        ${f.options.map((o, n) => `<button type="button" data-v="${o}" aria-pressed="${n === f.val}">${o}</button>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  renderSummary();
+}
+function renderSummary(){
+  const rows = [{k:'Service', v:SERVICE_NAMES[svc]}];
+  FORM_FIELDS[svc].forEach(f => {
+    const raw = state[f.k];
+    rows.push({k:f.label.replace('?',''), v: f.type === 'range' ? raw + (f.suffix || '') : raw});
+  });
+  const digits = dPhone.value.replace(/\D/g, '');
+  rows.push({k:'Phone', v: digits.length === 10 ? digits : '—'});
+  sumEl.innerHTML = rows.map(r => `<li><span>${r.k}</span><b>${r.v}</b></li>`).join('');
+}
+svcEl.addEventListener('change', () => { svc = svcEl.value; buildFields(); });
+dynEl.addEventListener('input', e => {
+  const r = e.target.closest('input[type=range]'); if(!r) return;
+  state[r.dataset.k] = +r.value;
+  document.getElementById('o-' + r.dataset.k).textContent = r.value + (r.dataset.suffix || '');
+  renderSummary();
+});
+dynEl.addEventListener('click', e => {
+  const b = e.target.closest('.pills button'); if(!b) return;
+  const group = b.parentElement;
+  group.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  state[group.dataset.k] = b.dataset.v;
+  renderSummary();
+});
+dPhone.addEventListener('input', () => {
+  const v = dPhone.value.replace(/\D/g, '');
+  dHint.className = 'hint';
+  if(!v.length) dHint.textContent = 'We check this as you type, so a typo never costs you a callback.';
+  else if(v.length < 10){ dHint.textContent = `${10 - v.length} more digit${10 - v.length > 1 ? 's' : ''} to go`; dHint.classList.add('no'); }
+  else if(v.length > 10){ dHint.textContent = 'That looks too long — check the number'; dHint.classList.add('no'); }
+  else { dHint.textContent = 'Looks good — we can reach you there'; dHint.classList.add('ok'); }
+  renderSummary();
+});
+document.getElementById('demoSend').addEventListener('click', () => {
+  const note = document.getElementById('demoNote');
+  note.textContent = 'Nothing sent — this page is a demonstration.';
+  setTimeout(() => { note.textContent = 'This is a demo — nothing is submitted.'; }, 2600);
+});
+buildFields();
+
+// counter
+const c1 = document.getElementById('c1');
+new IntersectionObserver((entries, obs) => {
+  entries.forEach(en => {
+    if(!en.isIntersecting) return;
+    const to = +c1.dataset.to;
+    const start = performance.now(), dur = 1100;
+    (function step(now){
+      const t = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - t, 3);
+      c1.innerHTML = Math.round(to * eased) + '<span style="opacity:' + (t === 1 ? 1 : 0) + '">+</span>';
+      if(t < 1) requestAnimationFrame(step);
+    })(start);
+    obs.unobserve(en.target);
+  });
+}, {threshold:.6}).observe(c1);
+
+// lazy row
+document.getElementById('lazyRow').innerHTML =
+  LAZY.map(id => `<div><img src="${img(id, 240, 240)}" alt="" loading="lazy"></div>`).join('');
+</script>
+</body>
+</html>
