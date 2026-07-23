@@ -6,6 +6,21 @@
 <title>What a website can actually do — a working demo</title>
 <meta name="description" content="Live examples of interactive website components: filterable galleries, comparison sliders, instant pricing, conditional forms and layouts that hold up on every screen.">
 
+<!-- link preview for WhatsApp / Instagram / LinkedIn / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://threesixtyplus.github.io/websitedemonew/">
+<meta property="og:title" content="What a website can actually do">
+<meta property="og:description" content="A live demo you can drag, filter and type into. Built by Three Sixty Plus — Amritsar.">
+<meta property="og:image" content="https://static.wixstatic.com/media/ccfa30_3384ba860369418989b5af6f9d25d2dd~mv2.jpeg/v1/fill/w_1200,h_630,al_c,q_80/file.jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="Three Sixty Plus">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="What a website can actually do">
+<meta name="twitter:description" content="A live demo you can drag, filter and type into. Built by Three Sixty Plus — Amritsar.">
+<meta name="twitter:image" content="https://static.wixstatic.com/media/ccfa30_3384ba860369418989b5af6f9d25d2dd~mv2.jpeg/v1/fill/w_1200,h_630,al_c,q_80/file.jpeg">
+<link rel="canonical" href="https://threesixtyplus.github.io/websitedemonew/">
+
 <!--
 =====================================================================
   All images are live from the Three Sixty Plus media library.
@@ -107,8 +122,13 @@ header{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--paper
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:3px;background:var(--hair);outline:none}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:ew-resize;border:3px solid var(--surface);box-shadow:0 2px 10px rgba(0,0,0,.18)}
 input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:ew-resize;border:3px solid var(--surface)}
-.rig-stage{margin-top:20px;display:flex;justify-content:center;background:var(--paper);border-radius:12px;padding:16px 12px;overflow:hidden}
-.viewport{width:100%;max-width:100%;background:var(--surface);border:1px solid var(--hair);border-radius:10px;overflow:hidden;container-type:inline-size;transition:width .18s ease}
+.rig-stage{margin-top:20px;background:var(--paper);border-radius:12px;padding:16px 12px;overflow:hidden}
+.rig-holder{display:flex;justify-content:center;transition:height .18s ease}
+.viewport{
+  background:var(--surface);border:1px solid var(--hair);border-radius:10px;
+  overflow:hidden;container-type:inline-size;flex:none;
+  transform-origin:top center;transition:width .18s ease,transform .18s ease;
+}
 
 .mini-nav{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--hair)}
 .mini-logo{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px}
@@ -326,6 +346,7 @@ footer{border-top:1px solid var(--hair);padding:54px 0 36px;font-size:14.5px}
       </div>
       <input type="range" id="wRange" min="320" max="1140" value="1140" aria-label="Drag to resize the preview">
       <div class="rig-stage">
+        <div class="rig-holder" id="rigHolder">
         <div class="viewport" id="viewport">
           <div class="mini-nav">
             <span class="mini-logo">Aurora Skincare</span>
@@ -345,6 +366,7 @@ footer{border-top:1px solid var(--hair);padding:54px 0 36px;font-size:14.5px}
             <div class="mini-card"><b>Serums</b><span>Targeted treatment</span></div>
             <div class="mini-card"><b>Sets</b><span>Full routines</span></div>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -662,14 +684,20 @@ themeSwitches.forEach(sw => sw.addEventListener('click', e => {
 }));
 setTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
-// responsive rig
+// responsive rig — the preview keeps its true width and scales down to fit,
+// so Tablet and Desktop are viewable even on a narrow phone screen
 const wRange = document.getElementById('wRange'), viewport = document.getElementById('viewport'),
+      rigHolder = document.getElementById('rigHolder'),
       wRead = document.getElementById('wRead'), dRead = document.getElementById('dRead'),
       presets = document.querySelectorAll('.rig-presets button');
+
 function setWidth(px){
-  const stage = viewport.parentElement.clientWidth - 24;
-  viewport.style.width = Math.min(px, stage) + 'px';
-  wRead.textContent = px + 'px';
+  const stage = rigHolder.clientWidth;
+  const scale = Math.min(1, stage / px);
+  viewport.style.width = px + 'px';
+  viewport.style.transform = 'scale(' + scale + ')';
+  rigHolder.style.height = (viewport.offsetHeight * scale) + 'px';
+  wRead.textContent = px + 'px' + (scale < 1 ? ' · ' + Math.round(scale * 100) + '% zoom' : '');
   dRead.textContent = px < 560 ? 'Phone layout' : px < 900 ? 'Tablet layout' : 'Desktop layout';
   presets.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.w === px)));
 }
@@ -677,6 +705,8 @@ wRange.addEventListener('input', e => setWidth(+e.target.value));
 presets.forEach(b => b.addEventListener('click', () => { wRange.value = b.dataset.w; setWidth(+b.dataset.w); }));
 window.addEventListener('resize', () => setWidth(+wRange.value));
 setWidth(+wRange.value);
+// recalculate once the preview image has loaded and changed the height
+window.addEventListener('load', () => setWidth(+wRange.value));
 document.getElementById('deviceImg').src = img(DEVICE, 700, 700);
 
 // gallery
