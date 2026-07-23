@@ -123,7 +123,7 @@ input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:ew-resize;border:3px solid var(--surface);box-shadow:0 2px 10px rgba(0,0,0,.18)}
 input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:ew-resize;border:3px solid var(--surface)}
 .rig-stage{margin-top:20px;background:var(--paper);border-radius:12px;padding:16px 12px;overflow:visible}
-.rig-holder{display:flex;justify-content:center;min-height:220px;transition:height .18s ease}
+.rig-holder{display:flex;justify-content:center;align-items:flex-start;min-height:220px;transition:height .18s ease}
 .viewport{
   background:var(--surface);border:1px solid var(--hair);border-radius:10px;
   overflow:hidden;container-type:inline-size;flex:none;
@@ -691,22 +691,36 @@ const wRange = document.getElementById('wRange'), viewport = document.getElement
       wRead = document.getElementById('wRead'), dRead = document.getElementById('dRead'),
       presets = document.querySelectorAll('.rig-presets button');
 
+function syncHeight(){
+  const px = +wRange.value;
+  const stage = rigHolder.clientWidth || viewport.parentElement.clientWidth;
+  const scale = Math.min(1, stage / px);
+  // measure the content itself, never the box we just resized
+  let h = 0;
+  for(const child of viewport.children) h += child.offsetHeight;
+  if(!h) h = viewport.scrollHeight;
+  if(h > 0) rigHolder.style.height = Math.ceil(h * scale) + 'px';
+}
+
 function setWidth(px){
-  const stage = rigHolder.clientWidth;
+  const stage = rigHolder.clientWidth || viewport.parentElement.clientWidth;
   const scale = Math.min(1, stage / px);
   viewport.style.width = px + 'px';
   viewport.style.transform = 'scale(' + scale + ')';
-  rigHolder.style.height = (viewport.offsetHeight * scale) + 'px';
   wRead.textContent = px + 'px' + (scale < 1 ? ' · ' + Math.round(scale * 100) + '% zoom' : '');
   dRead.textContent = px < 560 ? 'Phone layout' : px < 900 ? 'Tablet layout' : 'Desktop layout';
   presets.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.w === px)));
+  requestAnimationFrame(syncHeight);
 }
 wRange.addEventListener('input', e => setWidth(+e.target.value));
 presets.forEach(b => b.addEventListener('click', () => { wRange.value = b.dataset.w; setWidth(+b.dataset.w); }));
 window.addEventListener('resize', () => setWidth(+wRange.value));
-setWidth(+wRange.value);
-// recalculate once the preview image has loaded and changed the height
+
+// keep the holder matched to the preview as fonts and images finish loading
+if(window.ResizeObserver) new ResizeObserver(syncHeight).observe(viewport);
 window.addEventListener('load', () => setWidth(+wRange.value));
+document.fonts && document.fonts.ready.then(syncHeight);
+setWidth(+wRange.value);
 document.getElementById('deviceImg').src = img(DEVICE, 700, 700);
 
 // gallery
